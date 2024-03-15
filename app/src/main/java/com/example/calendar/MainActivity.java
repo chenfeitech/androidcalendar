@@ -268,6 +268,7 @@ public class MainActivity extends AppCompatActivity {
                     //存储到数据库
                     ContentValues contentValues = new ContentValues();
                     contentValues.put("date",date);
+                    contentValues.put("title",content);
                     contentValues.put("content",content);
                     contentValues.put("type",type);
                     if(db.replace("notebook",null,contentValues) > 0) {
@@ -336,12 +337,14 @@ public class MainActivity extends AppCompatActivity {
     private void display(Calendar calendar)
     {
         String date = calendar.getYear() + "-" + calendar.getMonth() + "-" + calendar.getDay();
-        Cursor cursor = db.rawQuery("select content,type from notebook where date='" + date + "'",null);
+        Cursor cursor = db.rawQuery("select title, content,type from notebook where date='" + date + "'",null);
 
         if(cursor.moveToFirst()) {
             flag = true;
-            String content = cursor.getString(0);
-            type = cursor.getString(1);
+            String title = cursor.getString(0);
+            String content = cursor.getString(1);
+            type = cursor.getString(2);
+            Log.e("title",title);
             Log.e("content",content);
             Log.e("type",type);
             editText.setText(content);
@@ -364,6 +367,7 @@ public class MainActivity extends AppCompatActivity {
             Calendar d1 = getSchemeCalendar(calendar.getYear(), calendar.getMonth(), calendar.getDay(), 0xFFcc0000, "");
             calendarView.removeSchemeDate(d1);
         }
+        updateListViewData(date);
         editText.setVisibility(View.GONE);
         textView.setVisibility(View.VISIBLE);
         edit_btn.setVisibility(View.VISIBLE);
@@ -413,8 +417,12 @@ public class MainActivity extends AppCompatActivity {
             String content = cursor.getString(1);
             type = cursor.getString(2);
             itemList.add(new DayItem(title,content,date,""));
+            Log.e("title",title);
+            Log.e("content",content);
+            Log.e("type",type);
 
         } else {
+            Log.e("content","加空内容");
             // itemList.add(new DayItem(.getTitle(),.getContent(),.getCreateTime(),.getUsername()));
             itemList.add(new DayItem("暂时没有内容","等待加入内容",date,""));
         }

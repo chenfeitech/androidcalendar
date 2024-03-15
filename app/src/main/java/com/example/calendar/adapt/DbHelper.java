@@ -37,8 +37,8 @@ public class DbHelper extends SQLiteOpenHelper {
     public void onUpgrade(SQLiteDatabase sqLiteDatabase, int i, int i1)
     {
         //可重新建表
-        // sqLiteDatabase.execSQL("drop table if exists "+TABLE_NAME);
-        // onCreate(sqLiteDatabase);
+        sqLiteDatabase.execSQL("drop table if exists "+TABLE_NAME);
+        onCreate(sqLiteDatabase);
 
 
         //也可在表中新增列元素， 使用 SQL的ALTER语句
