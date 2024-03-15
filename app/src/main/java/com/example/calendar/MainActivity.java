@@ -271,9 +271,10 @@ public class MainActivity extends AppCompatActivity {
                     contentValues.put("title",content);
                     contentValues.put("content",content);
                     contentValues.put("type",type);
-                    if(db.replace("notebook",null,contentValues) > 0) {
+                    if(db.insert("notebook",null, contentValues) > 0) {
                         Log.e("note","插入成功");
                     }
+                    db.execSQL("insert into notebook (title,content,type) values ('李四','李四ssddddd',2)");
                 } else { //若编辑后为空
                     del_btn.setVisibility(View.GONE); //不显示删除
                     flag = false;
@@ -290,11 +291,11 @@ public class MainActivity extends AppCompatActivity {
 
     // 初始化日期右上角标注
     private void init_theme() {
-//        week 栏的背景和颜色
+        // week 栏的背景和颜色
         calendarView.setWeeColor(0xFF0099cc, 0xFFccffcc);
         map = new HashMap<>();
-        //设置已有标注
-        String order = "select date, type from notebook";
+        // 设置已有标注
+        String order = "select DISTINCT date, type from notebook";
         Cursor cursor = db.rawQuery(order,null);
         if(cursor.moveToFirst()) {
             do {
@@ -302,21 +303,23 @@ public class MainActivity extends AppCompatActivity {
                 String type = cursor.getString(1);
                 String year = "", month = "", day = "";
                 //获取年月日
-                int k = 0;
-                for(int i = 0; i < date.length(); i++) {
-                    char ch = date.charAt(i);
-                    if(ch == '-') {
-                        k++;
-                    } else {
-                        if(k == 0) year += ch;
-                        if(k == 1) month += ch;
-                        if(k == 2) day +=ch;
+                if(date != null) {
+                    int k = 0;
+                    for (int i = 0; i < date.length(); i++) {
+                        char ch = date.charAt(i);
+                        if (ch == '-') {
+                            k++;
+                        } else {
+                            if (k == 0) year += ch;
+                            if (k == 1) month += ch;
+                            if (k == 2) day += ch;
+                        }
                     }
+                    Log.e("year month day", year + month + day);
+                    //放入map
+                    Calendar d1 = getSchemeCalendar(Integer.valueOf(year), Integer.valueOf(month), Integer.valueOf(day), random_color(), type);
+                    map.put(d1.toString(), d1);
                 }
-                Log.e("year month day",year + month + day);
-                //放入map
-                Calendar d1 = getSchemeCalendar(Integer.valueOf(year), Integer.valueOf(month), Integer.valueOf(day), random_color(), type);
-                map.put(d1.toString(), d1);
             } while (cursor.moveToNext());
         }
         //设置标注
@@ -411,16 +414,18 @@ public class MainActivity extends AppCompatActivity {
         // usersDays=usersDayDao.getDiariesForSelectedDate(receivedUsername,date);
         if(itemList!=null) itemList.clear();
         Cursor cursor = db.rawQuery("select title, content,type from notebook where date='" + date + "'",null);
-
-        if(cursor.moveToFirst()) {
-            String title = cursor.getString(0);
-            String content = cursor.getString(1);
-            type = cursor.getString(2);
-            itemList.add(new DayItem(title,content,date,""));
-            Log.e("title",title);
-            Log.e("content",content);
-            Log.e("type",type);
-
+        if (null != cursor)
+        {
+            while (cursor.moveToNext()) {
+                String title = cursor.getString(0);
+                String content = cursor.getString(1);
+                type = cursor.getString(2);
+                itemList.add(new DayItem(title, content, date, ""));
+                Log.e("title", title);
+                Log.e("content", content);
+                Log.e("type", type);
+            }
+            cursor.close();
         } else {
             Log.e("content","加空内容");
             // itemList.add(new DayItem(.getTitle(),.getContent(),.getCreateTime(),.getUsername()));
