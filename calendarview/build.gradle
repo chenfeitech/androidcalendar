@@ -7,8 +7,6 @@ android {
         minSdkVersion 14
         //noinspection OldTargetApi
         targetSdkVersion 28
-        versionCode 371
-        versionName "3.7.1"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
     }
@@ -30,6 +28,7 @@ android {
         include('classes.jar')
         rename ('classes.jar', 'CalendarView.jar')
     }
+    namespace 'com.haibin.calendarview'
     intoJar.dependsOn(build)
 }
 

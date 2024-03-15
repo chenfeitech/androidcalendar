@@ -1,2 +1,2 @@
 # calendar
-A calendar memo APP(my Android's big homework)
+A calendar memo APP for Android

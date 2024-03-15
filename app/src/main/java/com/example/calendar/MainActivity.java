@@ -3,6 +3,7 @@ package com.example.calendar;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.calendar.adapt.MyHelper;
 import com.haibin.calendarview.Calendar;
 import com.haibin.calendarview.CalendarLayout;
 import com.haibin.calendarview.CalendarView;
@@ -23,7 +24,7 @@ import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
     private int mYear;
-//    阴历，年份，月日，当前天数(右上角)
+    // 阴历，年份，月日，当前天数(右上角)
     TextView mTextLunar, mTextYear, mTextMonthDay, mTextCurrentDay;
     CalendarView calendarView;
     CalendarLayout calendarLayout;
@@ -224,6 +225,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        // 取消按钮
         cancel_btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -234,6 +236,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        // 保存按钮
         save_btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -272,7 +275,7 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    //      初始化日期右上角标注
+    // 初始化日期右上角标注
     private void init_theme() {
 //        week 栏的背景和颜色
         calendarView.setWeeColor(0xFF0099cc, 0xFFccffcc);
