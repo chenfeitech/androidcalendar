@@ -3,7 +3,9 @@ package com.example.calendar;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.example.calendar.adapt.MyHelper;
+import com.example.calendar.adapt.DayAdapter;
+import com.example.calendar.adapt.DayItem;
+import com.example.calendar.adapt.DbHelper;
 import com.haibin.calendarview.Calendar;
 import com.haibin.calendarview.CalendarLayout;
 import com.haibin.calendarview.CalendarView;
@@ -17,8 +19,10 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ListView;
 import android.widget.TextView;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -31,6 +35,8 @@ public class MainActivity extends AppCompatActivity {
     // 红 黄 蓝 橙 紫 绿 灰 粉 黄 褐
     int[] colors = {0xFFcc0000, 0xFFFF8C00, 0xFF3333ff, 0xFFFF7F00, 0xFF9900ff, 0xFF00ff33, 0xFF663300, 0xFFff0099, 0xFFFFD700, 0xFFCDAD00};
 
+    private ListView listView;
+    private ArrayList<DayItem> itemList;
     EditText editText;
     TextView textView;
     Button edit_btn;
@@ -39,7 +45,9 @@ public class MainActivity extends AppCompatActivity {
     Button save_btn;
     //  数据库对象
     SQLiteDatabase db;
-    MyHelper myHelper;
+    DbHelper dbHelper;
+    // 日期数据列表
+    DayAdapter dayAdapter;
     //  选中日期是否已经保存了备忘
     boolean flag;
     //  点击取消时闪回原有文本
@@ -59,9 +67,11 @@ public class MainActivity extends AppCompatActivity {
         flag = false;
         flash_back = "";
 
-        myHelper = new MyHelper(this);
-        db = myHelper.getReadableDatabase();
+        dbHelper = new DbHelper(this);
+        db = dbHelper.getReadableDatabase();
+        // dayAdapter = new DayAdapter()
 
+        itemList = new ArrayList<>();
         init_view();
         init_theme();
         init_listen();
@@ -80,7 +90,8 @@ public class MainActivity extends AppCompatActivity {
         mTextYear = findViewById(R.id.tv_year);
         mTextMonthDay = findViewById(R.id.tv_month_day);
         mTextCurrentDay = findViewById(R.id.tv_current_day);
-
+        //消息列表
+        listView = findViewById(R.id.list_view);
         editText = findViewById(R.id.edit_content);
         editText.setVisibility(View.GONE);
         textView = findViewById(R.id.show_content);
@@ -97,6 +108,7 @@ public class MainActivity extends AppCompatActivity {
         mTextCurrentDay.setText(String.valueOf(calendarView.getCurDay())); //右上角
         mYear = calendarView.getCurYear();
     }
+
 
     private void init_listen() {
 //      监听日期改变
@@ -218,7 +230,7 @@ public class MainActivity extends AppCompatActivity {
                 Calendar calendar = calendarView.getSelectedCalendar();
                 String date = calendar.getYear() + "-" + calendar.getMonth() + "-" + calendar.getDay();
                 //从数据库删除
-                if(db.delete("note","date=?",new String[]{date})>0)
+                if(db.delete("notebook","date=?",new String[]{date})>0)
                     Log.e("note","删除成功");
                 //刷新显示和标注
                 display(calendar);
@@ -258,14 +270,14 @@ public class MainActivity extends AppCompatActivity {
                     contentValues.put("date",date);
                     contentValues.put("content",content);
                     contentValues.put("type",type);
-                    if(db.replace("note",null,contentValues) > 0) {
+                    if(db.replace("notebook",null,contentValues) > 0) {
                         Log.e("note","插入成功");
                     }
                 } else { //若编辑后为空
                     del_btn.setVisibility(View.GONE); //不显示删除
                     flag = false;
                     //从数据库删除
-                    if(db.delete("note","date=?",new String[]{date}) > 0)
+                    if(db.delete("notebook","date=?",new String[]{date}) > 0)
                         Log.e("note","删除成功");
                 }
 
@@ -281,7 +293,7 @@ public class MainActivity extends AppCompatActivity {
         calendarView.setWeeColor(0xFF0099cc, 0xFFccffcc);
         map = new HashMap<>();
         //设置已有标注
-        String order = "select date, type from note";
+        String order = "select date, type from notebook";
         Cursor cursor = db.rawQuery(order,null);
         if(cursor.moveToFirst()) {
             do {
@@ -324,7 +336,7 @@ public class MainActivity extends AppCompatActivity {
     private void display(Calendar calendar)
     {
         String date = calendar.getYear() + "-" + calendar.getMonth() + "-" + calendar.getDay();
-        Cursor cursor = db.rawQuery("select content,type from note where date='" + date + "'",null);
+        Cursor cursor = db.rawQuery("select content,type from notebook where date='" + date + "'",null);
 
         if(cursor.moveToFirst()) {
             flag = true;
@@ -389,5 +401,25 @@ public class MainActivity extends AppCompatActivity {
     private int random_color() {
         int index = (int)(Math.random() * colors.length);
         return colors[index];
+    }
+
+    private void updateListViewData(String date) {
+        // usersDays=usersDayDao.getDiariesForSelectedDate(receivedUsername,date);
+        if(itemList!=null) itemList.clear();
+        Cursor cursor = db.rawQuery("select title, content,type from notebook where date='" + date + "'",null);
+
+        if(cursor.moveToFirst()) {
+            String title = cursor.getString(0);
+            String content = cursor.getString(1);
+            type = cursor.getString(2);
+            itemList.add(new DayItem(title,content,date,""));
+
+        } else {
+            // itemList.add(new DayItem(.getTitle(),.getContent(),.getCreateTime(),.getUsername()));
+            itemList.add(new DayItem("暂时没有内容","等待加入内容",date,""));
+        }
+
+        dayAdapter = new DayAdapter(this, itemList);
+        listView.setAdapter(dayAdapter);
     }
 }

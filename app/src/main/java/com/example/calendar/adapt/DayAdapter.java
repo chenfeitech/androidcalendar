@@ -13,6 +13,7 @@ import android.widget.TextView;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
+import com.example.calendar.MainActivity;
 import com.example.calendar.R;
 
 import java.util.ArrayList;
@@ -23,8 +24,8 @@ public class DayAdapter extends BaseAdapter {
     private ArrayList<DayItem> itemList;
     private String username;
     //  数据库对象
-    SQLiteDatabase db;
-
+    private SQLiteDatabase db;
+    private DbHelper dbHelper;
     public DayAdapter(Context context, ArrayList<DayItem> itemList) {
         this.context = context;
         this.itemList = itemList;
@@ -52,19 +53,15 @@ public class DayAdapter extends BaseAdapter {
         }
 
         //数据库初始化
-        db = Room.databaseBuilder(context, DataBase.class, "mydb")
-//                       .fallbackToDestructiveMigration()
-                .allowMainThreadQueries()
-                .build();
-        usersDayDao = db.usersDayDao();
-
+        dbHelper = new DbHelper(this.context);
+        db = dbHelper.getReadableDatabase();
 
         // 获取列表项中的各个视图
         TextView titleTextView = convertView.findViewById(R.id.item_title);
         TextView descriptionTextView = convertView.findViewById(R.id.item_description);
         TextView dateTextView = convertView.findViewById(R.id.item_date);
-        ImageButton button1 = convertView.findViewById(R.id.button1);
-        ImageButton button2 = convertView.findViewById(R.id.button2);
+        ImageButton editbutton = convertView.findViewById(R.id.editbutton);
+        ImageButton deletebutton = convertView.findViewById(R.id.deletebutton);
 
         // 获取当前位置的数据项
         DayItem currentItem = itemList.get(position);
@@ -77,42 +74,23 @@ public class DayAdapter extends BaseAdapter {
 
 
         // 设置按钮的点击事件
-        button1.setOnClickListener(new View.OnClickListener() {
+        editbutton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(context, Edit_dayActivity.class);
+                Intent intent = new Intent(context, MainActivity.class);
                 intent.putExtra("Date", currentItem.getDate());
                 intent.putExtra("Username", currentItem.getUsername());
                 context.startActivity(intent);
             }
         });
 
-        button2.setOnClickListener(new View.OnClickListener() {
+        deletebutton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                UsersDay usersDay=usersDayDao.getDiaryByUsernameAndTime(currentItem.getUsername(),currentItem.getDate());
-                usersDayDao.deleteDiary(usersDay);
-                ArrayList<DayItem>dayItems=new ArrayList<>();
-//                SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-                Log.d("flag", "onClick: "+currentItem.getDate());
-                String date= currentItem.getDate().substring(0, Math.min(str.length(), 10));
-                Log.d("flag", "onClick: "+date);
-                List<UsersDay> usersDays = usersDayDao.getDiariesForSelectedDate(currentItem.getUsername(), date);
-                for (UsersDay usd:usersDays
-                ) {
-                    dayItems.add(new DayItem(usd.getTitle(),usd.getContent(),usd.getCreateTime(),usd.getUsername()));
-                }
-                updateData(dayItems);
+                ///
             }
         });
 
         return convertView;
     }
-    public void updateData(ArrayList<DayItem> updatedItemList) {
-        itemList.clear();
-        itemList.addAll(updatedItemList);
-        Log.d("flag", "updateData: "+itemList);
-        notifyDataSetChanged();
-    }
-
 }

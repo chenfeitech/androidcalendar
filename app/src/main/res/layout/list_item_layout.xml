@@ -14,7 +14,7 @@
 
         <!-- 第一个按钮 -->
         <ImageButton
-            android:id="@+id/button1"
+            android:id="@+id/editbutton"
             android:layout_width="32dp"
             android:layout_height="32dp"
             android:layout_marginEnd="8dp"
@@ -22,7 +22,7 @@
 
         <!-- 第二个按钮 -->
         <ImageButton
-            android:id="@+id/button2"
+            android:id="@+id/deletebutton"
             android:layout_width="32dp"
             android:layout_height="32dp"
             android:background="@drawable/delete_trash_icon"/>
